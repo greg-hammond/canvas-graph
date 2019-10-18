@@ -1,18 +1,8 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { ViewChild, ElementRef } from '@angular/core';
-import { CONTEXT_NAME } from '@angular/compiler/src/render3/view/util';
-
+import { Component, OnInit } from '@angular/core';
+import { MatSliderChange } from '@angular/material/slider';
+import { MatSelectChange } from '@angular/material/select'
 import { PerspectiveService } from '../perspective.service';
 import { FunctionDataService } from '../function-data.service';
-
-/*
-canvas usage references/sources:
-https://stackoverflow.com/questions/44426939/how-to-use-canvas-in-angular2
-https://stackblitz.com/edit/canvas-example?file=app%2Fapp.component.ts
-*/
-
-// question (general) - how should components respond to window.resize.  what's the 'angular' way
-
 
 @Component({
   selector: 'app-graph',
@@ -20,281 +10,175 @@ https://stackblitz.com/edit/canvas-example?file=app%2Fapp.component.ts
   styleUrls: ['./graph.component.less']
 })
 
+/**
+ *  issues / to-do:
+ *  - window resize / canvas resize
+ *  - function select styling - consistent / override ng
+ *  
+ * 
+ * */
+
+export class GraphComponent implements OnInit {
+
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private funcs;
+  private selFunc;
 
 
-export class GraphComponent implements OnInit, AfterViewInit {
-
+  // DI our services
   constructor(
-    private perspective: PerspectiveService,
-    private functionSvc: FunctionDataService
-
+    private perspCalc: PerspectiveService,
+    private funcList: FunctionDataService
   ) { }
-
-  @ViewChild('canvas', {static: false}) canvas: ElementRef;
-
-  ctx: CanvasRenderingContext2D;
-
-  width: number = 500;
-  height: number = 500;
-  begLine: boolean = false;
-  cx: number = 0;
-  cy: number = 0;
-
-
 
 
   ngOnInit() {
-    // if not needed, remove, and remove from 'implements' and 'import' above
-  
-  }
+    this.canvas = document.querySelector('canvas');
+    this.ctx = this.canvas.getContext('2d');
 
-
-  ngAfterViewInit() {
-
-    // initialize the drawing context.
-    this.ctx = this.canvas.nativeElement.getContext('2d');
+    this.ctx.lineWidth = 0.2;  // empirical
     //this.resize();  // ?????
+    this.funcs = this.funcList.getFunctionList();
+    this.selFunc = this.funcs[0];
+    this.render();
   }
 
 
-
-
-//////////////// params stuff
-
-
-
-
-// params = {
-
-
-//   // color input range 0-360 (slider value)
-//   // this will now operate exclusively off color slider, NOT timer slider or time value.
-//   fnColor:	function(val)  	{
-//     var hue = +val,
-//         sat = "100%",
-//         lum = "50%";
-//     return 'hsl(' + hue + ',' + sat + ',' + lum + ')';
-//   },
-
-//   // for now, color, time, zoom values here must match what the slider/input element value specifies in their #.append() methods below
-//   color: 'hsl(193, 100%, 50%)',
-//   time: 0,
-//   speed: 1,       // 0.1 to 10 x -- not implemented yet
-//   zoom: 0.42,
-
-//   needRender: false,
-
-//   render: {
-
-//     //type: 'polar',
-//     //type: 'parametric',
-//     type: 'rect',
-
-//     lineWidth: 0.5,   // very nice.  1.0 looks coarse; 0.25 is too faint (?)
-
-//     // applies to type=polar only
-//     radMax: 20,
-//     radStep: .2,
-
-//     // applies to type=rect only
-//     xmin: -15,
-//     xmax: 15,
-//     ymin: -15,
-//     ymax: 15,
-//     majStep: .4,
-//     minStep: .08
-//   }
-
-// }; // end params
-
-
-
-// put the below on ice. for now.
-
-
-
-
-///////////////////  render stuff
-
-// Render() {
-
-//   // re-render the current function to the canvas.
-
-
-//   if (!params.needRender) { return; }
-
-//   params.needRender = false;
-
-// 	var   time =      params.time * Math.PI / 180,
-//         color =     params.color,
-//         render =    params.render,
-//         //func =      params.fnSurface,
-//         func = selFunc.fnSurface,
-//         x, y, z;
-
-//   // evaluate current viewer and target locs, and stuff into perspective calculator
-//   perspective.setViewer(selFunc.fnViewer(time));
-//   perspective.setTarget(selFunc.fnTarget(time));
-
-
-//   // set up drawing context vars
-//   canvas.setVars(color);
-
-
-//   var calcZ = function(func, x, y, time) {
-//     return func(x, y, time);
-//   };
-
-//   var addPoint = function(point) {
-//     var pageXY = perspective.getXYPageCoords(point, params.zoom);
-//     canvas.addPoint(pageXY);
-//   }
-
-
-//   switch (render.type) {
-
-//     case 'parametric':
-
-//       // note - not parametric in t here!  although we can (should) utilize t
-//       // to vary what we graph as time changes.
-//       // input:  parametric parameter 0 to 1, with 'step' steps.
-//       // output:  x,y,z
-
-//       // ** this isn't hooked up yet - no xfunc/yfunc implementation added above yet **
-
-//       canvas.startLine();
-//       for (var i = 0; i <= 1; i += 1/step) {
-
-//         // ugh, paradigm breaking up... I'd like one function to return x,y,z given 'i' input here.
-//         // TBD.
-//         x = render.xfunc(i);
-//         y = render.yfunc(i);
-//         z = render.zfunc(i);
-//         addPoint([x,y,z]);
-//       }
-//       canvas.endLine();
-
-//       break;
-
-
-//     case 'polar':
-
-//       var twopi = 2 * Math.PI;
-//       for (var rad = render.radStep; rad <= render.radMax; rad += render.radStep) {
-//         canvas.startLine();
-//           for (var phi = 0; phi <= twopi + .01; phi += twopi/100) {
-//               x = rad * Math.cos(phi);
-//               y = rad * Math.sin(phi);
-//               z = calcZ(func, x, y, time);
-//               addPoint([x, y, z]);
-//           }
-//         canvas.endLine();
-//       }
-
-//       break;
-
-//     case 'rect':
-
-//   		for (x = render.xmin; x <= render.xmax; x += render.majStep) {
-//   			canvas.startLine();
-//   			for (y = render.ymin; y <= render.ymax; y += render.minStep) {
-//           z = calcZ(func, x, y, time);
-//           addPoint([x,y,z]);
-//   			}
-//   			canvas.endLine();
-//   		}
-
-//   		for (y = render.ymin; y <= render.ymax; y += render.majStep) {
-//   			canvas.startLine();
-//   			for (x = render.xmin; x <= render.xmax; x += render.minStep) {
-//           z = calcZ(func, x, y, time);
-//           addPoint([x,y,z]);
-//   			}
-//   			canvas.endLine();
-//   		}
-//       break;
-
-//     default:
-//       break;
-
-// 	}  // end switch
-
-// } // end Render()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////// canvas stuff /////////////
-//   {
-
-//   startLine () {
-//     this.begLine = true;
-//   }
-
-//   endLine() {
-//     this.ctx.stroke();
-//   }
-
-
-//   addPoint(pgCoords: number[]) {
-
-//     this.cx = Math.floor(this.width * (pgCoords[0] + 1) / 2);
-//     this.cy = Math.floor(this.height * (1 - pgCoords[1]) / 2);
-
-//     if ( this.cx < 0 || this.cx > this.width || this.cy < 0 || this.cy > this.height ) {
-//       return;   // bail - off screen.
-//     }
-
-//     if (this.begLine) {
-//       this.ctx.beginPath();
-//       this.ctx.moveTo(this.cx, this.cy);
-//       this.begLine = false;
-//     } else {
-//       this.ctx.lineTo(this.cx, this.cy);
-//     }
-//   }
-
-//   setVars(color: string) { 
-//     this.ctx.clearRect(0, 0, this.width, this.height);  // clear the previous drawing
-//     this.ctx.lineWidth = 0.5;
-//     this.ctx.strokeStyle = color;
-//   }
-
-
-
-//   private resize() {
-    
-//       // let width = window.innerWidth - 20;
-//       // let height = window.innerHeight - 20;
-//       // this.canvas.width = width;
-//       // canv.height = height;
-//       // canv.style.width = width + 'px';
-//       // canv.style.height = height + 'px';
-//   }
-
-
-//   // window.addEventListener('resize', resize, false);
-
-// }
-
-
+  // user changed the selected function
+  onFunctionChange(event: MatSelectChange) {
+    this.render();
+  }
+
+  // pen color slider
+  slideHSLHue = 200; // blue-cyan
+  drawColor = 'hsl(' + this.slideHSLHue + ', 100%, 50%)';
+  onHSLColorChange(event: MatSliderChange) {
+    // we'll need +1 - see expl above
+    this.slideHSLHue = event.value;
+    this.drawColor = 'hsl(' + this.slideHSLHue + ', 100%, 50%)';
+    this.render();
+  }
+
+
+  // background grayscale color
+  // (changing the background does not require a re-render!)
+  slideBKGLum = 18; 
+  slideBKGColor = 'hsl(0, 0%, ' + this.slideBKGLum + '%)';
+  foreColorLum = (this.slideBKGLum + 50) % 100;
+  foreColor = 'hsl(0, 0%, ' + this.foreColorLum + '%)';
+
+  onBKGColorChange(event: MatSliderChange) {
+
+    // this should not be necessary - because slideBKGLum is already
+    // bound to the slider - but without this, the bkg color
+    // only updates after slider mouseup.  This line allows us
+    // to instantaneously/continuously update the bkg color
+    // as the slider is moved.  
+    this.slideBKGLum = event.value;
+
+    // this, I have to do - because we need to recalc the actual
+    // hsl color (which is a composed string) from the numeric
+    // "L" value which the slider is giving us.
+    this.slideBKGColor = 'hsl(0, 0%, ' + this.slideBKGLum + '%)';
+    this.foreColorLum = (this.slideBKGLum + 50) % 100;
+    this.foreColor = 'hsl(0, 0%, ' + this.foreColorLum + '%)';
+  }
+
+
+  // time slider - time value (0 to 2*pi)
+  slideTime = 1.2;
+  onTimeChange(event: MatSliderChange) {
+    this.slideTime = event.value;
+    this.render();
+  }
+
+
+  // zoom slider - map zoom slider 0-100 --> zoom factor .1 to 100
+  slideZoom = 25;
+  zoomValue = (10 ** (this.slideZoom / 33 - 1));
+  onZoomChange(event: MatSliderChange) {
+    this.slideZoom = event.value;
+    this.zoomValue = (10 ** (this.slideZoom / 33 - 1));
+    this.render();
+  }
+
+
+  
+  // draw the graph when any of the above change.
+  private render() {
+
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+
+    let
+      begLine = false,
+      cx = 0,
+      cy = 0,
+
+      time = this.slideTime,
+      surface = this.selFunc.fnSurface,
+      POVfunc = this.selFunc.fnViewer,
+      TGTfunc = this.selFunc.fnTarget,
+      zoom = this.zoomValue;
+
+
+    // clear canvas and set pen color
+    this.ctx.clearRect(0, 0, width, height);
+    this.ctx.strokeStyle = this.drawColor;
+
+    // viewer and target locations can be parametric in (t) - evaluate 
+    // their locations and stuff into the perspective engine
+    this.perspCalc.setViewer(POVfunc(time));
+    this.perspCalc.setTarget(TGTfunc(time));
+
+
+    let addPoint = (point: number[]) => {
+      
+      // calculate X-Y screen loc for point in space
+      // returns pageXY[x,y] where (x,y) in range [-1,+1]
+      let pageXY: number[] = this.perspCalc.getXYPageCoords(point, zoom);
+      
+      // scale to canvas size, and xlate to screen coords
+      cx = Math.floor(width * (pageXY[0] + 1) / 2);
+      cy = Math.floor(height * (1 - pageXY[1]) / 2);
+
+      // check to see that point should hit screen (canvas) area
+      if (cx > 0 && cx < width && cy > 0 && cy < height) {
+        if (begLine) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(cx, cy);
+          begLine = false;
+        } else {
+          this.ctx.lineTo(cx, cy);
+        }
+      }
+    }
+
+    // draw it!
+
+    let xyRng = {
+      xmin: -15, xmax: 15,
+      ymin: -15, ymax: 15,
+      majStep: .4, minStep: .08
+    };
+
+    for (let x: number = xyRng.xmin; x <= xyRng.xmax; x += xyRng.majStep) {
+      begLine = true;
+      for (let y = xyRng.ymin; y <= xyRng.ymax; y += xyRng.minStep) {
+        addPoint([x, y, surface(x, y, time)]);
+      }
+      this.ctx.stroke();
+    }
+
+    for (let y: number = xyRng.ymin; y <= xyRng.ymax; y += xyRng.majStep) {
+      begLine = true;
+      for (let x: number = xyRng.xmin; x <= xyRng.xmax; x += xyRng.minStep) {
+        addPoint([x, y, surface(x, y, time)]);
+      }
+      this.ctx.stroke();
+    }
+
+  }
 
 }

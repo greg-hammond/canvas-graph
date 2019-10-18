@@ -1,1 +1,88 @@
-<canvas id="canvas"></canvas>
+
+<mat-card [ngStyle]= "{
+    backgroundColor: slideBKGColor,
+    color: foreColor
+}">
+
+
+    <mat-card-title>Perspective Grapher</mat-card-title>
+    <mat-card-subtitle> {{selFunc.fnSurface}}</mat-card-subtitle>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-content class='clearfix'>
+
+        <div class='controls'>
+
+            <mat-form-field>
+                <mat-label [ngStyle]="{ color: foreColor }">
+                    Function
+                </mat-label>
+
+                <mat-select 
+                    [(ngModel)]='selFunc' 
+                    name='funcs'
+                    (selectionChange)='onFunctionChange($event)'
+                >
+                    <mat-option [value]='func' *ngFor='let func of funcs'>
+                        {{func.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            
+            <div class="slider">
+                <h4>Pen Color:</h4>
+                <mat-slider
+                    class = 'slider-color'
+                    [max] = '360'
+                    [min] = '0'
+                    [step] = '1'
+                    [(ngModel)]='slideHSLHue'
+                    (input)='onHSLColorChange($event)'
+                ></mat-slider>
+            </div>
+
+            <div class="slider">
+                <h4>Background:</h4>
+                <mat-slider
+                    class = 'slider-bkg'
+                    [max] = '90'
+                    [min] = '5'
+                    [step] = '1'
+                    [(ngModel)]='slideBKGLum'
+                    (input)='onBKGColorChange($event)'
+                ></mat-slider>
+            </div>
+
+            <div class="slider">
+                <h4>Time Value:</h4>
+                <mat-slider
+                    class = 'slider-time'
+                    [max] = '6.28318531'        
+                    [min] = '0'
+                    [step] = '.01'
+                    [(ngModel)]='slideTime'
+                    (input)='onTimeChange($event)'
+                ></mat-slider>
+            </div>
+
+            <div class="slider">
+                <h4>Zoom:</h4>    
+                <mat-slider
+                    class = 'slider-zoom'
+                    [max] = '100'
+                    [min] = '0'
+                    [step] = '.5'
+                    [(ngModel)]='slideZoom'
+                    (input)='onZoomChange($event)'
+                ></mat-slider>
+            </div>
+
+        </div>
+        <div class='grapharea'>
+            <canvas id="canvas" height="1000px" width="1200px"></canvas>
+        </div>
+
+    </mat-card-content>
+
+</mat-card>
