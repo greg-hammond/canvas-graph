@@ -22,8 +22,8 @@ export class GraphComponent implements OnInit {
 
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private funcs;
-  private selFunc;
+  funcs;
+  selFunc;
 
 
   // DI our services
