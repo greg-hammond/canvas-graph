@@ -37,8 +37,6 @@ export class GraphComponent implements OnInit {
     this.canvas = document.querySelector('canvas');
     this.ctx = this.canvas.getContext('2d');
 
-    this.ctx.lineWidth = 0.2;  // empirical
-    //this.resize();  // ?????
     this.funcs = this.funcList.getFunctionList();
     this.selFunc = this.funcs[0];
     this.render();
@@ -104,6 +102,13 @@ export class GraphComponent implements OnInit {
   }
 
 
+  // pen width slider - .05 to 2.00
+  slidePenWidth = .2;  // initial
+  onPenWidthChange(event: MatSliderChange) {
+    this.slidePenWidth = event.value;
+    this.render();
+  }
+
   
   // draw the graph when any of the above change.
   private render() {
@@ -123,8 +128,9 @@ export class GraphComponent implements OnInit {
       zoom = this.zoomValue;
 
 
-    // clear canvas and set pen color
+    // clear canvas and set pen width+color
     this.ctx.clearRect(0, 0, width, height);
+    this.ctx.lineWidth = this.slidePenWidth;
     this.ctx.strokeStyle = this.drawColor;
 
     // viewer and target locations can be parametric in (t) - evaluate 

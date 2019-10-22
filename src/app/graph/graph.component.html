@@ -10,7 +10,7 @@
 
     <mat-divider></mat-divider>
 
-    <mat-card-content class='clearfix'>
+    <mat-card-content>
 
         <div class='controls'>
 
@@ -78,8 +78,21 @@
                 ></mat-slider>
             </div>
 
+            <div class="slider">
+                <h4>Pen Width:</h4>    
+                <mat-slider
+                    class = 'slider-penwidth'
+                    [max] = '0.50'
+                    [min] = '0.05'
+                    [step] = '.005'
+                    [(ngModel)]='slidePenWidth'
+                    (input)='onPenWidthChange($event)'
+                ></mat-slider>
+            </div>
+
         </div>
-        <div class='grapharea'>
+
+        <div>
             <canvas id="canvas" height="1000px" width="1200px"></canvas>
         </div>
 
