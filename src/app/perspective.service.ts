@@ -5,22 +5,6 @@ import { Injectable } from '@angular/core';
 })
 
 
-/*
-  setTarget([0, 0, 0]);
-  setViewer([3, 4, 5]);
-  getXYPageCoords([1, 1.333333333, 1.666666666], 1);
-
-
-three things that aren't quite right:
- - limTAN. 
- - '0.8'
- - zoom
-these all have to do with scale and shape.  they're an attempt to describe how we map physical
-reality onto this mathematical construct.  Probably need a cleaner way to manage this - and it
-should happen outside of this class.  
-Maybe zoom is okay as-is...
-*/
-
 export class PerspectiveService {
 
   private a: number;
@@ -39,7 +23,6 @@ export class PerspectiveService {
     this.R = 0;
     this.pv = [0, 0, 0];
     this.pt = [0, 0, 0];
-
   }
 
   private dist(i: number, j: number) { return Math.sqrt(i * i + j * j) };
@@ -62,26 +45,27 @@ export class PerspectiveService {
     this.updateVars();
   }
 
-  getXYPageCoords(point: number[], zoom: number) {  
+  // calculate x, y picture plane coordinates for given point.
+  // center screen/viewport = [0, 0]
+  // plus-x direction to right
+  // plus-y direction is up
+  // removed all references to zoom, sizing, shaping/framing.  just calculate the coords.
+  getPicPlaneCoords(point: number[]) {  
 
     let
-      // ratio of pic plane half-width to v-t dist
-      limTAN: number = 0.364,   
+
       i: number = this.pv[0] - point[0],
       j: number = this.pv[1] - point[1],
       k: number = this.pv[2] - point[2],
       factor: number = this.R / this.D / (this.a * i + this.b * j + this.c * k),
 
-      // xpg = factor * R * (i*b - j*a);
-      // divide actual xpg by xpg(max) = .364*R - so we return a relative value
-      // ranging from -1 to +1 (and anything outside of that should not be plotted)
-      xpg: number = zoom * factor * (i * this.b - j * this.a) / limTAN,
+      // ppx = factor * R * (i*b - j*a);     
+      ppx: number = factor * (i * this.b - j * this.a),
 
-      // ypg = fctr * (c*a*i + c*b*j - k*D*D);
-      // .8 is fudge.  means canvas height is 80% of width.
-      ypg: number = zoom * .8 * factor * (this.c * this.a * i + this.c * this.b * j - k * this.D * this.D) / this.R / limTAN;
+      // ppy = factor * (c*a*i + c*b*j - k*D*D);
+      ppy: number = factor * (this.c * this.a * i + this.c * this.b * j - k * this.D * this.D)/ this.R;
 
-    return [xpg, ypg];
+    return [ppx, ppy];
   }
 
 
