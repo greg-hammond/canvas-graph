@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { MatSliderChange } from '@angular/material/slider';
 import { MatSelectChange } from '@angular/material/select'
 import { PerspectiveService } from '../perspective.service';
@@ -10,15 +10,20 @@ import { FunctionDataService } from '../function-data.service';
   styleUrls: ['./graph.component.less']
 })
 
+
+
 /**
  *  issues / to-do:
- *  - window resize / canvas resize
+ *  - window resize / canvas resize --> mainly good, just need to prevent 'squashing'. 
  *  - function select styling - consistent / override ng
  *  
  * 
  * */
 
 export class GraphComponent implements OnInit {
+
+
+
 
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -39,9 +44,32 @@ export class GraphComponent implements OnInit {
 
     this.funcs = this.funcList.getFunctionList();
     this.selFunc = this.funcs[0];
-    this.render();
+    this.sizeCanvas();  // size and do initial render
   }
 
+  // see https://stackoverflow.com/questions/35527456/angular-window-resize-event
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.sizeCanvas();
+  }
+
+
+  // called initially, and whenever window resizes
+  sizeCanvas() {
+
+    const 
+      width = document.body.clientWidth,
+      height = document.body.clientHeight;
+
+      this.canvas.width = width;
+      this.canvas.height= height;
+      this.canvas.style.width = `${width}px`;
+      this.canvas.style.height = `${height}px`;
+
+      this.render();  // draw after resizing
+
+  }
+  
 
   // user changed the selected function
   onFunctionChange(event: MatSelectChange) {
@@ -94,10 +122,16 @@ export class GraphComponent implements OnInit {
 
   // zoom slider - map zoom slider 0-100 --> zoom factor .1 to 100
   slideZoom = 25;
-  zoomValue = (10 ** (this.slideZoom / 33 - 1));
+  //zoomValue = (10 ** (this.slideZoom / 33 - 1));
+  zoomValue = (10 ** (this.slideZoom / 80 - .4 ));
   onZoomChange(event: MatSliderChange) {
     this.slideZoom = event.value;
-    this.zoomValue = (10 ** (this.slideZoom / 33 - 1));
+    //this.zoomValue = (10 ** (this.slideZoom / 33 - 1));
+    this.zoomValue = (10 ** (this.slideZoom / 80 - .4));
+
+    // I think these help.
+    this.canvas.style.width = this.canvas.width + "px";
+    this.canvas.style.height = this.canvas.height + "px";
     this.render();
   }
 
@@ -115,6 +149,7 @@ export class GraphComponent implements OnInit {
 
     const width = this.canvas.width;
     const height = this.canvas.height;
+
 
     let
       begLine = false,
@@ -143,11 +178,12 @@ export class GraphComponent implements OnInit {
       
       // calculate X-Y screen loc for point in space
       // returns pageXY[x,y] where (x,y) in range [-1,+1]
-      let pageXY: number[] = this.perspCalc.getXYPageCoords(point, zoom);
+      let pageXY: number[] = this.perspCalc.getPicPlaneCoords(point);
       
       // scale to canvas size, and xlate to screen coords
-      cx = Math.floor(width * (pageXY[0] + 1) / 2);
-      cy = Math.floor(height * (1 - pageXY[1]) / 2);
+      cx = Math.floor(width * ((zoom * pageXY[0]) + 1) / 2);
+      cy = Math.floor(height * (1 - (zoom * pageXY[1])) / 2);
+
 
       // check to see that point should hit screen (canvas) area
       if (cx > 0 && cx < width && cy > 0 && cy < height) {
@@ -163,10 +199,11 @@ export class GraphComponent implements OnInit {
 
     // draw it!
 
-    let xyRng = {
-      xmin: -15, xmax: 15,
-      ymin: -15, ymax: 15,
-      majStep: .4, minStep: .08
+    let max = 20,
+    xyRng = {
+      xmin: -max, xmax: max,
+      ymin: -max, ymax: max,
+      majStep: max/50, minStep: max/400
     };
 
     for (let x: number = xyRng.xmin; x <= xyRng.xmax; x += xyRng.majStep) {
