@@ -120,14 +120,12 @@ export class GraphComponent implements OnInit {
   }
 
 
-  // zoom slider - map zoom slider 0-100 --> zoom factor .1 to 100
+  // zoom slider - map zoom slider 0-100 --> zoom factor 10^-0.5 to 10^1.5
   slideZoom = 25;
-  //zoomValue = (10 ** (this.slideZoom / 33 - 1));
-  zoomValue = (10 ** (this.slideZoom / 80 - .4 ));
+  zoomValue = (10 ** (this.slideZoom / 50 - 1.5));
   onZoomChange(event: MatSliderChange) {
     this.slideZoom = event.value;
-    //this.zoomValue = (10 ** (this.slideZoom / 33 - 1));
-    this.zoomValue = (10 ** (this.slideZoom / 80 - .4));
+    this.zoomValue = (10 ** (this.slideZoom / 50 - 1.5));
 
     // I think these help.
     this.canvas.style.width = this.canvas.width + "px";
@@ -147,8 +145,7 @@ export class GraphComponent implements OnInit {
   // draw the graph when any of the above change.
   private render() {
 
-    const width = this.canvas.width;
-    const height = this.canvas.height;
+
 
 
     let
@@ -162,6 +159,11 @@ export class GraphComponent implements OnInit {
       TGTfunc = this.selFunc.fnTarget,
       zoom = this.zoomValue;
 
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    // general scaling - to larger canvas dimension
+    let multiplier = (width > height) ? width : height;
+    multiplier *= zoom;
 
     // clear canvas and set pen width+color
     this.ctx.clearRect(0, 0, width, height);
@@ -177,13 +179,11 @@ export class GraphComponent implements OnInit {
     let addPoint = (point: number[]) => {
       
       // calculate X-Y screen loc for point in space
-      // returns pageXY[x,y] where (x,y) in range [-1,+1]
       let pageXY: number[] = this.perspCalc.getPicPlaneCoords(point);
       
-      // scale to canvas size, and xlate to screen coords
-      cx = Math.floor(width * ((zoom * pageXY[0]) + 1) / 2);
-      cy = Math.floor(height * (1 - (zoom * pageXY[1])) / 2);
-
+      // scale value and adjust [0,0] to center of canvas
+      cx = width/2 + multiplier * pageXY[0] ;
+      cy = height/2 - multiplier * pageXY[1];
 
       // check to see that point should hit screen (canvas) area
       if (cx > 0 && cx < width && cy > 0 && cy < height) {
