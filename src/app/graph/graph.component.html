@@ -30,65 +30,64 @@
                 </mat-select>
             </mat-form-field>
             
-            <div class="slider">
-                <h4>Pen Color:</h4>
-                <mat-slider
-                    class = 'slider-color'
-                    [max] = '360'
-                    [min] = '0'
-                    [step] = '1'
-                    [(ngModel)]='slideHSLHue'
-                    (input)='onHSLColorChange($event)'
-                ></mat-slider>
+            <div class="slider-container">
+
+                <div class="slider">
+                    <mat-slider
+                        class = 'slider-color'
+                        [(ngModel)]='slideHSLHue'
+                        (input)='onHSLColorChange($event)'
+                        [vertical]='true' [min]='0' [max]='360' [step]='1'
+                    ></mat-slider>
+                    <h4>Color</h4>
+                </div>
+    
+                <div class="slider">
+                    <mat-slider
+                        class = 'slider-bkg'
+                        [(ngModel)]='slideBKGLum'
+                        (input)='onBKGColorChange($event)'
+                        [vertical]='true' [min]='5' [max]='90' [step]='1'
+                    ></mat-slider>
+                    <h4>Bkg</h4>
+                </div>
+    
+                <div class="slider">
+                    <mat-slider
+                        class = 'slider-time'
+                        [(ngModel)]='slideTime'
+                        (input)='onTimeChange($event)'
+                        [vertical]='true' [min]='0' [max]='6.28318531' [step]='.01'
+                    ></mat-slider>
+                    <h4>Time</h4>   
+                </div>
+    
+                <div class="slider">
+                    
+                    <mat-slider
+                        class = 'slider-zoom'
+                        [(ngModel)]='slideZoom'
+                        (input)='onZoomChange($event)'
+                        [vertical]='true' [min]='0' [max]='100' [step]='.5'
+                    ></mat-slider>
+                    <h4>Zoom</h4>   
+                </div>
+    
+                <div class="slider">
+                    <mat-slider
+                        class = 'slider-penwidth'
+                        [(ngModel)]='slidePenWidth'
+                        (input)='onPenWidthChange($event)'
+                        [vertical]='true' [min]='0.05' [max]='0.50' [step]='.005'
+                    ></mat-slider>
+                    <h4>Weight</h4>    
+                </div>
+
+
+
             </div>
 
-            <div class="slider">
-                <h4>Background:</h4>
-                <mat-slider
-                    class = 'slider-bkg'
-                    [max] = '90'
-                    [min] = '5'
-                    [step] = '1'
-                    [(ngModel)]='slideBKGLum'
-                    (input)='onBKGColorChange($event)'
-                ></mat-slider>
-            </div>
 
-            <div class="slider">
-                <h4>Time Value:</h4>
-                <mat-slider
-                    class = 'slider-time'
-                    [max] = '6.28318531'        
-                    [min] = '0'
-                    [step] = '.01'
-                    [(ngModel)]='slideTime'
-                    (input)='onTimeChange($event)'
-                ></mat-slider>
-            </div>
-
-            <div class="slider">
-                <h4>Zoom:</h4>    
-                <mat-slider
-                    class = 'slider-zoom'
-                    [max] = '100'
-                    [min] = '0'
-                    [step] = '.5'
-                    [(ngModel)]='slideZoom'
-                    (input)='onZoomChange($event)'
-                ></mat-slider>
-            </div>
-
-            <div class="slider">
-                <h4>Pen Width:</h4>    
-                <mat-slider
-                    class = 'slider-penwidth'
-                    [max] = '0.50'
-                    [min] = '0.05'
-                    [step] = '.005'
-                    [(ngModel)]='slidePenWidth'
-                    (input)='onPenWidthChange($event)'
-                ></mat-slider>
-            </div>
 
         </div>
 
