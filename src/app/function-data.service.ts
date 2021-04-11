@@ -31,17 +31,18 @@ import { Injectable } from '@angular/core';
         name: 'cool wave',
         fnSurface: (x: number, y: number, t: number): number => {
           let dist = Math.pow((x * x + y * y), .5);
-          return dist * Math.sin(dist / 2 + 3 * t) * Math.cos(x / 2 + 3 * t) * Math.sin(y / 2);
+          return 0.5 * dist * Math.sin(dist / 3 + 3 * t) * Math.cos(x / 3 + 3 * t) * Math.sin(y / 2);
         },
         fnViewer: (t: number): number[] => ([
-          20 * Math.cos(2 * t),
-          20 * Math.sin(2 * t),
-          30 * Math.sin(t)
+          30 * Math.cos(t/2),
+          30 * Math.sin(t/2),
+          20
+          //30 * Math.sin(t)
         ]),
         fnTarget: (t: number): number[] => ([
           0,
           0,
-          0
+          -10
         ])
       }
 

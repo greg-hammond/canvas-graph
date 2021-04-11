@@ -121,7 +121,7 @@ export class GraphComponent implements OnInit {
 
 
   // zoom slider - map zoom slider 0-100 --> zoom factor 10^-0.5 to 10^1.5
-  slideZoom = 25;
+  slideZoom = 65;
   zoomValue = (10 ** (this.slideZoom / 50 - 1.5));
   onZoomChange(event: MatSliderChange) {
     this.slideZoom = event.value;
@@ -135,7 +135,7 @@ export class GraphComponent implements OnInit {
 
 
   // pen width slider - .05 to 2.00
-  slidePenWidth = .2;  // initial
+  slidePenWidth = 0.3;  // initial
   onPenWidthChange(event: MatSliderChange) {
     this.slidePenWidth = event.value;
     this.render();
